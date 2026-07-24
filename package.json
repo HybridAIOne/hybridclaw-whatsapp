@@ -1,0 +1,49 @@
+{
+  "name": "@hybridaione/hybridclaw-whatsapp",
+  "version": "0.1.0",
+  "license": "GPL-3.0-only",
+  "type": "module",
+  "description": "Install-on-demand WhatsApp channel transport for HybridClaw",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HybridAIOne/hybridclaw-whatsapp.git"
+  },
+  "homepage": "https://github.com/HybridAIOne/hybridclaw-whatsapp#readme",
+  "bugs": {
+    "url": "https://github.com/HybridAIOne/hybridclaw-whatsapp/issues"
+  },
+  "engines": {
+    "node": "22.x"
+  },
+  "packageManager": "npm@11.10.0",
+  "files": [
+    "dist/",
+    "hybridclaw.plugin.yaml",
+    "LICENSE",
+    "npm-shrinkwrap.json",
+    "README.md",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "build": "tsc",
+    "typecheck": "tsc -p tsconfig.typecheck.json",
+    "lint": "npm run typecheck -- --noUnusedLocals --noUnusedParameters && biome check .",
+    "format": "biome check --write .",
+    "test": "vitest run",
+    "notices": "node ./scripts/generate-third-party-notices.mjs",
+    "notices:check": "node ./scripts/generate-third-party-notices.mjs --check",
+    "check": "npm run lint && npm test && npm run notices:check",
+    "prepack": "npm run clean && npm run build && npm run notices:check"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "7.0.0-rc13",
+    "qrcode-terminal": "0.12.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.16",
+    "@types/node": "22.20.1",
+    "typescript": "5.9.3",
+    "vitest": "4.1.8"
+  }
+}
