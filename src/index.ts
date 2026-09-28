@@ -1,14 +1,22 @@
+/**
+ * Registers WhatsApp without loading its socket dependencies until first use.
+ * Unlike the transport, this wrapper owns no connection state and preserves
+ * send results unchanged across the lazy-loading boundary.
+ */
 import type {
   ChannelTransportInstance,
   HybridClawPluginDefinition,
   WhatsAppTransportHost,
 } from '@hybridaione/hybridclaw/plugin-sdk';
+import type { createWhatsAppTransport } from './transport.js';
+
+type WhatsAppTransport = ReturnType<typeof createWhatsAppTransport>;
 
 function createLazyTransport(
   host: WhatsAppTransportHost,
 ): ChannelTransportInstance {
-  let transportPromise: Promise<ChannelTransportInstance> | null = null;
-  const getTransport = (): Promise<ChannelTransportInstance> => {
+  let transportPromise: Promise<WhatsAppTransport> | null = null;
+  const getTransport = (): Promise<WhatsAppTransport> => {
     transportPromise ??= import('./transport.js').then((module) =>
       module.createWhatsAppTransport(host),
     );
@@ -24,10 +32,10 @@ function createLazyTransport(
       await (await transportPromise).shutdown();
     },
     async sendText(chatId, text) {
-      await (await getTransport()).sendText(chatId, text);
+      return (await getTransport()).sendText(chatId, text);
     },
     async sendMedia(params) {
-      await (await getTransport()).sendMedia(params);
+      return (await getTransport()).sendMedia(params);
     },
     async createPairingSession() {
       const transport = await getTransport();
@@ -42,7 +50,7 @@ function createLazyTransport(
 const plugin: HybridClawPluginDefinition = {
   id: 'whatsapp',
   name: 'WhatsApp',
-  version: '0.1.0',
+  version: '0.1.1',
   kind: 'channel',
   register(api) {
     api.registerChannelTransport({

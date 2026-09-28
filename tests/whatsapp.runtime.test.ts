@@ -903,3 +903,60 @@ test('cleans up inbound WhatsApp media after the turn completes', async () => {
 
   fs.rmSync(tempDir, { recursive: true, force: true });
 });
+
+test('returns all text chunk IDs in order and retains messages for retry', async () => {
+  vi.useFakeTimers();
+  const { runtime, manager } = await importFreshRuntimeModule();
+  const sent = runtime.sendToWhatsAppChat(
+    '15550100100@s.whatsapp.net',
+    'a'.repeat(4500),
+  );
+  await vi.runAllTimersAsync();
+  await expect(sent).resolves.toEqual({ messageIds: ['bot-1', 'bot-2'] });
+  expect(manager.rememberSentMessage).toHaveBeenCalledTimes(2);
+});
+
+test('returns the media ID and retains the message for retry', async () => {
+  const { runtime, manager } = await importFreshRuntimeModule();
+  await expect(
+    runtime.sendWhatsAppMediaToChat({
+      jid: '15550100100@s.whatsapp.net',
+      filePath: '/tmp/image.png',
+    }),
+  ).resolves.toEqual({ messageIds: ['bot-1'] });
+  expect(manager.rememberSentMessage).toHaveBeenCalledTimes(1);
+});
+
+test.each([
+  'text',
+  'media',
+] as const)('does not invent IDs for %s sends without a socket ID', async (kind) => {
+  const { runtime, socket } = await importFreshRuntimeModule();
+  socket.sendMessage.mockResolvedValueOnce({
+    key: { id: '', remoteJid: '15550100100@s.whatsapp.net', fromMe: true },
+  });
+  const sent =
+    kind === 'text'
+      ? runtime.sendToWhatsAppChat('15550100100@s.whatsapp.net', 'hello')
+      : runtime.sendWhatsAppMediaToChat({
+          jid: '15550100100@s.whatsapp.net',
+          filePath: '/tmp/image.png',
+        });
+  await expect(sent).resolves.toEqual({ messageIds: [] });
+});
+
+test.each([
+  'text',
+  'media',
+] as const)('propagates %s socket failures', async (kind) => {
+  const { runtime, socket } = await importFreshRuntimeModule();
+  socket.sendMessage.mockRejectedValueOnce(new Error('send failed'));
+  const sent =
+    kind === 'text'
+      ? runtime.sendToWhatsAppChat('15550100100@s.whatsapp.net', 'hello')
+      : runtime.sendWhatsAppMediaToChat({
+          jid: '15550100100@s.whatsapp.net',
+          filePath: '/tmp/image.png',
+        });
+  await expect(sent).rejects.toThrow('send failed');
+});

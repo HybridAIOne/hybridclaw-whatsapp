@@ -67,11 +67,20 @@ declare module '@hybridaione/hybridclaw/plugin-sdk' {
     stop(): Promise<void>;
   }
 
+  export interface ChannelTransportSendResult {
+    messageIds: string[];
+  }
+
   export interface ChannelTransportInstance {
     init(handler: ChannelTransportMessageHandler): Promise<void>;
     shutdown(): Promise<void>;
-    sendText(chatId: string, text: string): Promise<void>;
-    sendMedia(params: ChannelTransportMediaSendParams): Promise<void>;
+    sendText(
+      chatId: string,
+      text: string,
+    ): Promise<ChannelTransportSendResult> | Promise<void>;
+    sendMedia(
+      params: ChannelTransportMediaSendParams,
+    ): Promise<ChannelTransportSendResult> | Promise<void>;
     createPairingSession?(): Promise<ChannelTransportPairingSession>;
   }
 
