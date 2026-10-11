@@ -1,8 +1,14 @@
+/**
+ * Owns the WhatsApp connection and inbound lifecycle, preserving outbound IDs.
+ * Unlike delivery helpers, this transport also tracks retries and self echoes;
+ * a returned ID records socket acceptance, not recipient delivery.
+ */
 import type {
   ChannelTransportInstance,
   ChannelTransportMediaSendParams,
   ChannelTransportMessageHandler,
   ChannelTransportReplyFn,
+  ChannelTransportSendResult,
   WhatsAppTransportHost,
 } from '@hybridaione/hybridclaw/plugin-sdk';
 import type { WAMessage } from '@whiskeysockets/baileys';
@@ -74,9 +80,7 @@ function buildReactionCleanupTargets(
   return targets;
 }
 
-export function createWhatsAppTransport(
-  host: WhatsAppTransportHost,
-): ChannelTransportInstance {
+export function createWhatsAppTransport(host: WhatsAppTransportHost) {
   let connectionManager: WhatsAppConnectionManager | null = null;
   let inboundDebouncer: ReturnType<typeof createWhatsAppDebouncer> | null =
     null;
@@ -101,21 +105,33 @@ export function createWhatsAppTransport(
     }
   };
 
-  const sendTextToChat = async (jid: string, text: string): Promise<void> => {
+  const sendTextToChat = async (
+    jid: string,
+    text: string,
+  ): Promise<ChannelTransportSendResult> => {
     const manager = ensureConnectionManager();
     const socket = await manager.waitForSocket();
-    await sendChunkedWhatsAppText(host, socket, jid, text, async (sent) => {
-      selfEchoCache?.remember({
-        chatJid: sent?.key.remoteJid?.trim() || jid,
-        messageId: sent?.key.id?.trim() || null,
-      });
-      await manager.rememberSentMessage(sent);
-    });
+    const refs = await sendChunkedWhatsAppText(
+      host,
+      socket,
+      jid,
+      text,
+      async (sent) => {
+        selfEchoCache?.remember({
+          chatJid: sent?.key.remoteJid?.trim() || jid,
+          messageId: sent?.key.id?.trim() || null,
+        });
+        await manager.rememberSentMessage(sent);
+      },
+    );
+    return {
+      messageIds: refs.flatMap((ref) => (ref.messageId ? [ref.messageId] : [])),
+    };
   };
 
   const sendMediaToChat = async (
     params: ChannelTransportMediaSendParams,
-  ): Promise<void> => {
+  ): Promise<ChannelTransportSendResult> => {
     const manager = ensureConnectionManager();
     const socket = await manager.waitForSocket();
     const ref = await sendWhatsAppMedia({
@@ -131,6 +147,7 @@ export function createWhatsAppTransport(
     if (ref) {
       selfEchoCache?.remember(ref);
     }
+    return { messageIds: ref?.messageId ? [ref.messageId] : [] };
   };
 
   const ensureConnectionManager = (
@@ -396,12 +413,8 @@ export function createWhatsAppTransport(
 
   return {
     init,
-    async sendText(jid: string, text: string): Promise<void> {
-      await sendTextToChat(jid, text);
-    },
-    async sendMedia(params: ChannelTransportMediaSendParams): Promise<void> {
-      await sendMediaToChat(params);
-    },
+    sendText: sendTextToChat,
+    sendMedia: sendMediaToChat,
     shutdown,
     async createPairingSession() {
       const manager = createWhatsAppConnectionManager(host);
@@ -414,5 +427,5 @@ export function createWhatsAppTransport(
         stop: () => manager.stop(),
       };
     },
-  };
+  } satisfies ChannelTransportInstance;
 }

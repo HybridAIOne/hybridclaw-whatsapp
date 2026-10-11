@@ -18,6 +18,13 @@ or compile this plugin.
 After installation, configure and link WhatsApp through the normal HybridClaw
 channel setup flow.
 
+## Send Results
+
+Text and media sends return `{ messageIds: string[] }`. Text IDs follow chunk
+order; missing socket IDs are omitted. These IDs identify accepted sends, not
+delivery receipts or verified recipients. The plugin does not verify recipient
+registration or track delivery receipts. HybridClaw reports delivery as unconfirmed.
+
 ## Development
 
 Requires Node.js 22 and npm 11.10 or newer.

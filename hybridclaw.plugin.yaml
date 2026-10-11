@@ -1,6 +1,6 @@
 id: whatsapp
 name: WhatsApp
-version: 0.1.0
+version: 0.1.1
 kind: channel
 description: WhatsApp Web channel transport for HybridClaw.
 entrypoint: dist/index.js
