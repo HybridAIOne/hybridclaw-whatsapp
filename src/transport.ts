@@ -9,7 +9,6 @@ import type {
   ChannelTransportMessageHandler,
   ChannelTransportReplyFn,
   ChannelTransportSendResult,
-  WhatsAppTransportHost,
 } from '@hybridaione/hybridclaw/plugin-sdk';
 import type { WAMessage } from '@whiskeysockets/baileys';
 import {
@@ -28,6 +27,7 @@ import {
   sendWhatsAppReaction,
   sendWhatsAppReadReceipt,
 } from './delivery.js';
+import type { WhatsAppTransportHost } from './host.js';
 import {
   cleanupWhatsAppInboundMedia,
   processInboundWhatsAppMessage,

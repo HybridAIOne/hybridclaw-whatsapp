@@ -84,31 +84,11 @@ declare module '@hybridaione/hybridclaw/plugin-sdk' {
     createPairingSession?(): Promise<ChannelTransportPairingSession>;
   }
 
-  export interface WhatsAppTransportHost {
+  export interface ChannelTransportHost<Config = unknown> {
     appVersion: string;
     defaultAgentId: string;
     logger: PluginLogger;
-    getConfig(): RuntimeWhatsAppConfig;
-    auth: {
-      authDir: string;
-      acquireLock(
-        authDir?: string,
-        options?: { purpose?: string; timeoutMs?: number },
-      ): Promise<() => void>;
-      ensureAuthDir(authDir?: string): Promise<string>;
-    };
-    pairing: {
-      clear(): void;
-      setError(message: string): void;
-      setQrText(qrText: string): void;
-    };
-    phone: {
-      canonicalizeUserJid(jid: string): string | null;
-      isGroupJid(jid: string): boolean;
-      jidToPhone(jid: string): string | null;
-      normalizePhoneNumber(raw: string): string | null;
-      normalizeUserIdentity(jid: string): string | null;
-    };
+    getConfig(): Config;
     media: {
       createContextItem(params: {
         attachmentName: string;
@@ -150,17 +130,62 @@ declare module '@hybridaione/hybridclaw/plugin-sdk' {
       shouldNotify(key: string, cooldownMs?: number, nowMs?: number): boolean;
     };
     sleep(ms: number): Promise<void>;
+    renderQrSvg(input: string, ariaLabel?: string): string;
   }
 
-  export interface WhatsAppChannelTransportRegistration {
-    kind: 'whatsapp';
-    create(host: WhatsAppTransportHost): ChannelTransportInstance;
+  export interface ChannelTransportAuthStatus {
+    linked: boolean;
+    [field: string]: unknown;
   }
 
-  export type ChannelTransportRegistration =
-    WhatsAppChannelTransportRegistration;
+  export interface ChannelTransportPairingState {
+    pairingQrText: string | null;
+    updatedAt: string | null;
+    error: string | null;
+    [field: string]: unknown;
+  }
+
+  export interface ChannelTransportDoctorFinding {
+    severity: 'ok' | 'warn' | 'error';
+    message: string;
+  }
+
+  export interface ChannelTransportSendDescription {
+    sentFrom: string;
+    recipient: string;
+    note?: string;
+  }
+
+  export interface ChannelTransportRegistration {
+    kind: string;
+    create(host: ChannelTransportHost): ChannelTransportInstance;
+    matchesTarget(target: string): boolean;
+    normalizeTarget(target: string): string | null;
+    getAuthStatus(): Promise<ChannelTransportAuthStatus>;
+    resetAuth(): Promise<string>;
+    getPairingState?(): ChannelTransportPairingState;
+    /** `deliveryTarget` is the heartbeat or most recent session channel; older cores omit it. */
+    doctorChecks?(params: {
+      enabled: boolean;
+      deliveryTarget?: string | null;
+    }): Promise<ChannelTransportDoctorFinding[]>;
+    messageToolHints?(params: { channelId: null }): string[];
+    describeSend?(params: {
+      target: string;
+      auth: ChannelTransportAuthStatus;
+    }): ChannelTransportSendDescription;
+  }
+
+  export interface PluginRuntime {
+    readonly cwd: string;
+    readonly homeDir: string;
+    readonly installRoot: string;
+    readonly runtimeConfigPath: string;
+  }
 
   export interface HybridClawPluginApi {
+    readonly config: Readonly<{ whatsapp: RuntimeWhatsAppConfig }>;
+    readonly runtime: PluginRuntime;
     registerChannelTransport(transport: ChannelTransportRegistration): void;
   }
 
