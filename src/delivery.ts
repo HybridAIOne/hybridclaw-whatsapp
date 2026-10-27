@@ -1,11 +1,11 @@
 import path from 'node:path';
-import type { WhatsAppTransportHost } from '@hybridaione/hybridclaw/plugin-sdk';
 import type {
   AnyMessageContent,
   WAMessage,
   WAMessageKey,
   WASocket,
 } from '@whiskeysockets/baileys';
+import type { WhatsAppTransportHost } from './host.js';
 import { markdownToWhatsApp } from './markdown.js';
 import { resolveWhatsAppMimeTypeFromPath } from './mime-utils.js';
 import type { WhatsAppOutboundMessageRef } from './self-echo-cache.js';

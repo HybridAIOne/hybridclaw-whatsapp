@@ -2,7 +2,6 @@ import fs from 'node:fs/promises';
 import type {
   ChannelTransportMessageHandler,
   RuntimeWhatsAppConfig,
-  WhatsAppTransportHost,
 } from '@hybridaione/hybridclaw/plugin-sdk';
 import {
   downloadMediaMessage,
@@ -11,6 +10,7 @@ import {
   type WAMessage,
   type WASocket,
 } from '@whiskeysockets/baileys';
+import type { WhatsAppTransportHost } from './host.js';
 import { guessWhatsAppExtensionFromMimeType } from './mime-utils.js';
 
 type MediaContextItem = Parameters<ChannelTransportMessageHandler>[6][number];

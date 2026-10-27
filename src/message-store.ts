@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { WhatsAppTransportHost } from '@hybridaione/hybridclaw/plugin-sdk';
 import { proto, type WAMessageKey } from '@whiskeysockets/baileys';
+import type { WhatsAppTransportHost } from './host.js';
 
 const MESSAGE_STORE_FILE = 'message-store.json';
 const MAX_STORED_MESSAGES = 256;

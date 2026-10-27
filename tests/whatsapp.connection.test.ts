@@ -596,7 +596,6 @@ test('provides WhatsApp retry replay lookup to Baileys and persists sent message
     APP_VERSION,
     acquireWhatsAppAuthLock,
     createWhatsAppConnectionManager,
-    host,
     releaseAuthLock,
     sockets,
     messageStore,
@@ -605,7 +604,7 @@ test('provides WhatsApp retry replay lookup to Baileys and persists sent message
   const manager = createWhatsAppConnectionManager();
   await manager.start();
 
-  expect(acquireWhatsAppAuthLock).toHaveBeenCalledWith(host.auth.authDir, {
+  expect(acquireWhatsAppAuthLock).toHaveBeenCalledWith({
     purpose: 'runtime',
   });
   expect(sockets[0]?.config.browser).toEqual([

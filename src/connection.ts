@@ -1,4 +1,3 @@
-import type { WhatsAppTransportHost } from '@hybridaione/hybridclaw/plugin-sdk';
 import type { ConnectionState, WASocket } from '@whiskeysockets/baileys';
 import {
   DisconnectReason,
@@ -8,6 +7,7 @@ import {
 } from '@whiskeysockets/baileys';
 import qrcode from 'qrcode-terminal';
 import { loadWhatsAppAuthState } from './auth-state.js';
+import type { WhatsAppTransportHost } from './host.js';
 import {
   createWhatsAppMessageStore,
   type WhatsAppMessageStore,
@@ -584,9 +584,7 @@ export function createWhatsAppConnectionManager(
       return;
     }
     if (started) return;
-    releaseAuthLock ??= await host.auth.acquireLock(host.auth.authDir, {
-      purpose: 'runtime',
-    });
+    releaseAuthLock ??= await host.auth.acquireLock({ purpose: 'runtime' });
     host.pairing.clear();
     started = true;
     reconnectDelayMs = INITIAL_RECONNECT_DELAY_MS;
