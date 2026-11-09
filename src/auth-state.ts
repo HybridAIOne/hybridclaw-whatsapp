@@ -1,7 +1,7 @@
-import type { WhatsAppTransportHost } from '@hybridaione/hybridclaw/plugin-sdk';
 import { useMultiFileAuthState } from '@whiskeysockets/baileys';
+import type { WhatsAppTransportHost } from './host.js';
 
 export async function loadWhatsAppAuthState(host: WhatsAppTransportHost) {
-  const authDir = await host.auth.ensureAuthDir(host.auth.authDir);
+  const authDir = await host.auth.ensureAuthDir();
   return useMultiFileAuthState(authDir);
 }

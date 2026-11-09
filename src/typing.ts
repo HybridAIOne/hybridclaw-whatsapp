@@ -1,5 +1,5 @@
-import type { WhatsAppTransportHost } from '@hybridaione/hybridclaw/plugin-sdk';
 import type { WASocket } from '@whiskeysockets/baileys';
+import type { WhatsAppTransportHost } from './host.js';
 
 export interface WhatsAppTypingController {
   start: () => void;

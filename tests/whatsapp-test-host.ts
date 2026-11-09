@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import type { WhatsAppTransportHost } from '@hybridaione/hybridclaw/plugin-sdk';
+import type { WhatsAppTransportHost } from '../src/host.js';
 
 const PHONE_JID_RE = /^(\d+)(?::\d+)?@(s\.whatsapp\.net|hosted)$/iu;
 const LID_JID_RE = /^(\d+)(?::\d+)?@(lid|hosted\.lid)$/iu;
@@ -242,9 +242,9 @@ export function createWhatsAppTestHost(
     auth: {
       authDir,
       acquireLock: async () => () => {},
-      ensureAuthDir: async (dir = authDir) => {
-        await fs.mkdir(dir, { recursive: true });
-        return dir;
+      ensureAuthDir: async () => {
+        await fs.mkdir(authDir, { recursive: true });
+        return authDir;
       },
     },
     pairing: {
@@ -322,6 +322,7 @@ export function createWhatsAppTestHost(
     isExpectedTransportError,
     SlidingWindowRateLimiter: TestRateLimiter,
     sleep: async () => {},
+    renderQrSvg: () => '<svg></svg>',
   };
 
   return {

@@ -18,6 +18,14 @@ or compile this plugin.
 After installation, configure and link WhatsApp through the normal HybridClaw
 channel setup flow.
 
+## Compatibility
+
+The plugin registers on HybridClaw's full channel transport contract and owns
+its credentials, pairing prompt, target matching, and doctor checks. It needs
+HybridClaw 0.39.6 or newer. Credentials stay in `credentials/whatsapp` under
+the HybridClaw data directory, so an existing link keeps working after an
+upgrade.
+
 ## Send Results
 
 Text and media sends return `{ messageIds: string[] }`. Text IDs follow chunk

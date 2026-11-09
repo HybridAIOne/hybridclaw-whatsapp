@@ -1,5 +1,5 @@
 import path from 'node:path';
-import type { WhatsAppTransportHost } from '@hybridaione/hybridclaw/plugin-sdk';
+import type { WhatsAppTransportHost } from './host.js';
 
 const MIME_TABLE = [
   { mimeType: 'image/jpeg', extensions: ['.jpg', '.jpeg'] },
